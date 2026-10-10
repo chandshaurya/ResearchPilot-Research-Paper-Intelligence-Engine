@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResearchPilot</title>
+<style>
+:root {
+  --bg: #e9edf1;
+  --surface: #f8fafb;
+  --ink: #15202a;
+  --muted: #566573;
+  --rule: #cdd5dc;
+  --cobalt: #1f3fd1;
+  --cobalt-ink: #ffffff;
+  --cobalt-wash: #dde4fb;
+  --ok: #17794a;   --ok-wash: #d8efe3;
+  --warn: #9a5a08; --warn-wash: #f6e6c9;
+  --bad: #b0281f;  --bad-wash: #f7dad7;
+  --mute-wash: #dfe4e9;
+  --serif: "Sitka Text", Charter, "Iowan Old Style", Cambria, Georgia, serif;
+  --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1317; --surface: #151c22; --ink: #e5eaee; --muted: #93a1ad; --rule: #2a343d;
+    --cobalt: #8aa0ff; --cobalt-ink: #0e1317; --cobalt-wash: #1d2650;
+    --ok: #62d09b; --ok-wash: #14392a; --warn: #e5a653; --warn-wash: #3d2c12;
+    --bad: #ff8d83; --bad-wash: #432220; --mute-wash: #232d35;
+  }
+}
+* { box-sizing: border-box; }
+html { color-scheme: light dark; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.5 var(--sans); padding-bottom: 96px;
+}
+[hidden] { display: none !important; }
+a { color: var(--cobalt); text-underline-offset: 2px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--cobalt); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.25; margin: 0; }
+
+/* ---------------------------------------------------------------- top bar */
+.top {
+  display: flex; align-items: baseline; gap: 32px; flex-wrap: wrap;
+  padding: 18px max(24px, calc((100vw - 1100px) / 2)); border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+}
+.brand { font: 600 26px/1 var(--serif); letter-spacing: -0.01em; }
+.nav { display: flex; gap: 4px; }
+.nav button {
+  background: none; border: 0; padding: 6px 12px; border-radius: 6px; cursor: pointer; color: var(--muted);
+}
+.nav button[aria-current="page"] { color: var(--ink); background: var(--mute-wash); font-weight: 600; }
+.nav button:hover { color: var(--ink); }
+main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+/* ----------------------------------------------------------------- common */
+.btn {
+  border: 1px solid var(--rule); background: var(--surface); padding: 8px 16px; border-radius: 6px;
+  cursor: pointer; font-weight: 600;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--cobalt); color: var(--cobalt-ink); border-color: var(--cobalt); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.quiet { border-color: transparent; background: none; color: var(--muted); font-weight: 500; }
+.btn.danger:hover { color: var(--bad); border-color: var(--bad); }
+.btn:disabled { opacity: .55; cursor: progress; }
+.badge {
+  display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  background: var(--mute-wash); color: var(--muted); white-space: nowrap;
+}
+.badge.ok { background: var(--ok-wash); color: var(--ok); }
+.badge.warn { background: var(--warn-wash); color: var(--warn); }
+.badge.bad { background: var(--bad-wash); color: var(--bad); }
+.muted { color: var(--muted); }
+.spinner {
+  width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--rule); border-top-color: var(--cobalt);
+  display: inline-block; animation: spin .8s linear infinite; flex: none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading { display: flex; gap: 12px; align-items: center; color: var(--muted); padding: 24px 0; }
+.empty { padding: 48px 0; color: var(--muted); max-width: 52ch; }
+.empty strong { color: var(--ink); font-family: var(--serif); font-size: 20px; display: block; margin-bottom: 6px; }
+.errorbox { border-left: 4px solid var(--bad); background: var(--bad-wash); padding: 12px 16px; margin: 16px 0; }
+
+/* ----------------------------------------------------------------- search */
+.finder { display: grid; gap: 16px; margin-bottom: 8px; }
+.finder h1 { font-size: 34px; letter-spacing: -0.01em; }
+.finder-line { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.finder input[type="search"] {
+  flex: 1 1 360px; min-width: 0; font: 400 22px/1.3 var(--serif); padding: 8px 0;
+  background: none; border: 0; border-bottom: 2px solid var(--ink); border-radius: 0;
+}
+.finder input[type="search"]:focus-visible { outline: none; border-bottom-color: var(--cobalt); }
+.finder select { padding: 8px 10px; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+.examples { display: flex; gap: 8px; flex-wrap: wrap; }
+.examples button {
+  border: 1px solid var(--rule); background: none; border-radius: 999px; padding: 2px 12px;
+  cursor: pointer; color: var(--muted); font-size: 14px;
+}
+.examples button:hover { color: var(--ink); border-color: var(--muted); }
+.count { margin: 24px 0 4px; color: var(--muted); }
+
+.row {
+  display: grid; grid-template-columns: 28px 1fr; gap: 14px; padding: 18px 0 18px 12px;
+  border-top: 1px solid var(--rule); border-left: 4px solid transparent; cursor: pointer;
+}
+.row:hover { background: color-mix(in srgb, var(--surface) 60%, transparent); }
+.row.on { border-left-color: var(--cobalt); background: var(--surface); }
+.tick {
+  appearance: none; width: 20px; height: 20px; margin: 3px 0 0; border: 1.5px solid var(--muted);
+  border-radius: 3px; background: var(--surface); cursor: pointer; display: grid; place-content: center;
+}
+.tick:checked {
+  background: var(--cobalt) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3.2 3.2L15 6.8' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;
+  border-color: var(--cobalt);
+}
+.tick:disabled { opacity: .4; cursor: not-allowed; }
+.paper-title { font-size: 19px; }
+.paper-title label { cursor: pointer; }
+.byline { display: flex; flex-wrap: wrap; gap: 4px 18px; color: var(--muted); font-size: 14px; margin: 4px 0 8px; align-items: center; }
+.abstract { margin: 0; max-width: 78ch; font-family: var(--serif); font-size: 15.5px; line-height: 1.6; }
+.abstract.clamp { display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.row-actions { display: flex; gap: 16px; margin-top: 8px; font-size: 14px; }
+.row-actions button { background: none; border: 0; padding: 0; color: var(--cobalt); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.more { margin: 24px 0; }
+
+.tray {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--ink); color: var(--bg);
+  padding: 14px max(24px, calc((100vw - 1100px) / 2)); display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+}
+.tray .picked { flex: 1 1 280px; min-width: 0; }
+.tray .picked b { font-family: var(--serif); font-size: 18px; margin-right: 12px; }
+.tray .titles { opacity: .75; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.tray .btn { background: transparent; color: var(--bg); border-color: color-mix(in srgb, var(--bg) 40%, transparent); }
+.tray .btn.primary { background: var(--cobalt); border-color: var(--cobalt); color: var(--cobalt-ink); }
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 100px; z-index: 9; max-width: min(560px, 92vw);
+  padding: 10px 18px; border-radius: 8px; background: var(--ink); color: var(--bg); box-shadow: 0 6px 24px rgba(0,0,0,.25);
+}
+.toast.bad { background: var(--bad); color: #fff; }
+
+/* ---------------------------------------------------------------- library */
+.lib-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.lib-head h1 { font-size: 30px; }
+.row .row-end { display: flex; gap: 8px; margin-top: 6px; }
+
+/* -------------------------------------------------------------- workspace */
+.work { display: grid; grid-template-columns: 290px 1fr; gap: 40px; align-items: start; }
+.work > * { min-width: 0; } /* lets the tab row scroll instead of stretching the column */
+@media (max-width: 860px) { .work { grid-template-columns: minmax(0, 1fr); gap: 24px; } }
+.list h2 { font-size: 20px; margin-bottom: 4px; }
+.list ul { list-style: none; padding: 0; margin: 12px 0; }
+.list li { display: grid; grid-template-columns: 18px 1fr auto; gap: 10px; padding: 12px 0; border-top: 1px solid var(--rule); align-items: start; }
+.list .t { font-family: var(--serif); font-size: 15px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.list .s { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.list .s.failed { color: var(--bad); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--rule); margin-top: 7px; }
+.dot.ready { background: var(--ok); } .dot.failed { background: var(--bad); }
+.list .x { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 0 2px; }
+.list .x:hover { color: var(--bad); }
+
+.tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--rule); overflow-x: auto; }
+.tabs button {
+  background: none; border: 0; padding: 8px 0 10px; cursor: pointer; color: var(--muted); font-weight: 600;
+  border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap;
+}
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--cobalt); }
+.panel { padding-top: 22px; }
+.panel .hint { margin: 0 0 10px; color: var(--muted); max-width: 64ch; }
+.panel textarea, .panel input[type="text"], .panel select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface);
+  font-family: var(--serif); font-size: 17px; line-height: 1.45;
+}
+.panel select { font-family: var(--sans); font-size: 15px; margin-top: 10px; }
+.actions { display: flex; align-items: center; gap: 14px; margin: 12px 0 4px; }
+.actions .note { color: var(--muted); font-size: 13px; }
+.out { margin-top: 20px; }
+
+.summary { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.out h3 { font-size: 22px; margin: 28px 0 6px; }
+.claim {
+  display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 8px 24px; padding: 14px 0 14px 16px;
+  border-top: 1px solid var(--rule); border-left: 4px solid var(--rule);
+}
+.claim.ok { border-left-color: var(--ok); } .claim.warn { border-left-color: var(--warn); } .claim.bad { border-left-color: var(--bad); }
+@media (max-width: 700px) { .claim { grid-template-columns: 1fr; } }
+.claim-text { margin: 0; font-family: var(--serif); font-size: 17px; line-height: 1.65; max-width: 68ch; }
+.margin { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; font-size: 13.5px; }
+.margin .note { color: var(--muted); margin: 0; }
+.chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--rule); background: var(--surface); border-radius: 4px; padding: 0 6px; font-size: 13px; cursor: pointer; color: var(--ink); }
+.chip:hover { border-color: var(--cobalt); color: var(--cobalt); }
+.evidence { grid-column: 1 / -1; }
+.evidence summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+blockquote { margin: 8px 0 4px; padding: 8px 14px; border-left: 3px solid var(--cobalt); background: var(--cobalt-wash); font-family: var(--serif); font-size: 15.5px; line-height: 1.6; max-width: 72ch; }
+.refs { margin-top: 32px; border-top: 1px solid var(--rule); padding-top: 4px; }
+.refs ol { list-style: none; padding: 0; margin: 8px 0; }
+.refs li { padding: 6px 0; display: grid; grid-template-columns: 42px 1fr; gap: 8px; font-size: 14.5px; }
+.refs li.flash { background: var(--cobalt-wash); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 900px; font-size: 14.5px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--rule); }
+th { font-weight: 600; color: var(--muted); background: var(--mute-wash); position: sticky; top: 0; }
+td:first-child { font-family: var(--serif); min-width: 200px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid var(--rule); padding: 16px 0; }
+.pair > div { padding: 0 20px 0 0; }
+.pair > div + div { padding: 0 0 0 20px; border-left: 1px solid var(--rule); }
+.pair .head { grid-column: 1 / -1; margin-bottom: 10px; }
+@media (max-width: 700px) { .pair { grid-template-columns: 1fr; } .pair > div + div { border-left: 0; padding: 12px 0 0; } }
+.pair p { margin: 0 0 6px; font-family: var(--serif); font-size: 16px; }
+.pair .src { font-size: 13.5px; color: var(--muted); }
+.verdict { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+.verdict .badge { font-size: 18px; padding: 4px 16px; }
+.meter { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--muted); }
+.meter i { display: inline-block; width: 90px; height: 6px; background: var(--mute-wash); border-radius: 3px; overflow: hidden; }
+.meter i b { display: block; height: 100%; background: var(--muted); }
+.hit { padding: 14px 0; border-top: 1px solid var(--rule); }
+.hit h3 { font-size: 17px; margin: 0 0 2px; }
+.hit .src { font-size: 13.5px; color: var(--muted); display: flex; gap: 4px 16px; flex-wrap: wrap; margin-bottom: 6px; }
+.hit p { margin: 0; font-family: var(--serif); font-size: 15.5px; line-height: 1.6; max-width: 76ch; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } .spinner { animation-duration: 2.4s; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">ResearchPilot</div>
+  <nav class="nav" aria-label="Main">
+    <button type="button" data-view="search">Find papers</button>
+    <button type="button" data-view="library">Library</button>
+    <button type="button" data-view="work" id="nav-work">Workspace</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============================== find papers ============================== -->
+  <section id="v-search">
+    <form class="finder" id="finder">
+      <h1>What do you want to read about?</h1>
+      <div class="finder-line">
+        <input type="search" id="q" placeholder="retrieval augmented generation" autocomplete="off" aria-label="Topic">
+        <select id="cat" aria-label="Field">
+          <option value="">Any field</option>
+          <option value="cs.CL">Computation and language</option>
+          <option value="cs.LG">Machine learning</option>
+          <option value="cs.AI">Artificial intelligence</option>
+          <option value="cs.CV">Computer vision</option>
+          <option value="cs.IR">Information retrieval</option>
+          <option value="stat.ML">Statistics: machine learning</option>
+          <option value="q-bio.BM">Biomolecules</option>
+        </select>
+        <select id="sort" aria-label="Sort by">
+          <option value="relevance">Best match</option>
+          <option value="submittedDate">Newest</option>
+        </select>
+        <button class="btn primary" type="submit" id="go">Search arXiv</button>
+      </div>
+      <div class="examples" id="examples"></div>
+    </form>
+    <div id="results"></div>
+  </section>
+
+  <!-- ================================ library ================================ -->
+  <section id="v-library" hidden>
+    <div class="lib-head">
+      <h1>Your library</h1>
+      <div>
+        <button class="btn primary" type="button" id="lib-go">Work with selected</button>
+      </div>
+    </div>
+    <p class="muted" style="margin:0 0 12px">Papers already downloaded and indexed. Tick the ones to work on together.</p>
+    <div id="lib-list"></div>
+  </section>
+
+  <!-- =============================== workspace =============================== -->
+  <section id="v-work" hidden>
+    <div id="work-empty" class="empty">
+      <strong>No papers in the workspace yet</strong>
+      Find papers on a topic and press Start work, or pick papers you already have from your library.
+      <div style="margin-top:16px;display:flex;gap:10px">
+        <button class="btn primary" type="button" data-view="search">Find papers</button>
+        <button class="btn" type="button" data-view="library">Open library</button>
+      </div>
+    </div>
+    <div class="work" id="work-body" hidden>
+      <aside class="list">
+        <h2>Reading list</h2>
+        <div class="muted" id="list-summary"></div>
+        <ul id="list"></ul>
+        <button class="btn" type="button" data-view="search">Add papers</button>
+      </aside>
+      <div>
+        <div class="tabs" role="tablist" id="tabs"></div>
+        <div id="panels"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="tray" id="tray" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+
+const state = {
+  view: "search",
+  results: [], total: 0, start: 0, q: "", sort: "relevance", category: "",
+  selected: new Map(),            // arxiv_id -> {arxiv_id, title}
+  library: [], libSel: new Set(), // arxiv_ids ticked in the library
+  workspace: [],                  // [{arxiv_id, title, status, message}]
+  jobId: null, poll: null, tab: "review",
+};
+const panels = {};
+let verifySelect = null;
+
+/* ------------------------------------------------------------------ helpers */
+function el(tag, props, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") n.className = v;
+    else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null || kid === false) continue;
+    n.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  }
+  return n;
+}
+
+async function api(path, { method = "GET", body } = {}) {
+  let res;
+  try {
+    res = await fetch(path, {
+      method,
+      headers: body ? { "Content-Type": "application/json" } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new Error("Cannot reach the server. Check that uvicorn is still running.");
+  }
+  if (!res.ok) {
+    let msg = res.statusText;
+    try {
+      const j = await res.json();
+      msg = typeof j.detail === "string" ? j.detail : JSON.stringify(j.detail);
+    } catch { /* keep statusText */ }
+    const err = new Error(msg);
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+
+let toastTimer;
+function toast(msg, kind) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.className = "toast" + (kind === "bad" ? " bad" : "");
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, kind === "bad" ? 7000 : 3500);
+}
+
+const loading = (text) => el("div", { class: "loading" }, el("span", { class: "spinner" }), el("span", { text }));
+const errorBox = (msg) => el("div", { class: "errorbox", role: "alert", text: msg });
+const pct = (x) => Math.round((x || 0) * 100) + "%";
+const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+
+function pageRef(id, ps, pe) {
+  if (!id || ps == null) return null;
+  const pages = ps === pe ? `p. ${ps}` : `pp. ${ps}–${pe}`;
+  return el("a", { href: `https://arxiv.org/pdf/${id}#page=${ps}`, target: "_blank", rel: "noopener", text: `arXiv:${id}, ${pages}` });
+}
+
+/* -------------------------------------------------------------------- views */
+function setView(v) {
+  state.view = v;
+  for (const name of ["search", "library", "work"]) $("#v-" + name).hidden = name !== v;
+  document.querySelectorAll(".nav button").forEach((b) => b.setAttribute("aria-current", b.dataset.view === v ? "page" : "false"));
+  renderTray();
+  if (v === "library") loadLibrary();
+  window.scrollTo({ top: 0 });
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-view]");
+  if (b) setView(b.dataset.view);
+});
+function updateNav() {
+  const n = state.workspace.length;
+  $("#nav-work").textContent = n ? `Workspace (${n})` : "Workspace";
+}
+
+/* ------------------------------------------------------------------- search */
+const EXAMPLES = ["retrieval augmented generation", "protein solubility prediction", "vision language model hallucination", "graph neural networks"];
+$("#examples").append(...EXAMPLES.map((t) => el("button", { type: "button", text: t, onclick: () => { $("#q").value = t; runSearch(false); } })));
+$("#finder").addEventListener("submit", (e) => { e.preventDefault(); runSearch(false); });
+
+async function runSearch(more) {
+  const q = $("#q").value.trim();
+  if (q.length < 2) return toast("Type a topic first.");
+  if (!more) { state.start = 0; state.results = []; }
+  state.q = q; state.sort = $("#sort").value; state.category = $("#cat").value;
+  const go = $("#go"); go.disabled = true;
+  if (!more) $("#results").replaceChildren(loading("Searching arXiv. It allows one request every 3 seconds, so this can take a moment."));
+  const params = new URLSearchParams({ q, start: state.start, limit: 15, sort: state.sort });
+  if (state.category) params.set("category", state.category);
+  try {
+    const data = await api("/papers/arxiv-search?" + params);
+    state.results.push(...data.results);
+    state.total = data.total;
+    state.start += data.results.length;
+    renderResults();
+  } catch (e) {
+    $("#results").replaceChildren(errorBox(e.message));
+  } finally { go.disabled = false; }
+}
+
+function renderResults() {
+  const box = $("#results");
+  if (!state.results.length) {
+    box.replaceChildren(el("div", { class: "empty" }, el("strong", { text: "No papers matched" }), "Try fewer or broader words, or remove the field filter."));
+    return;
+  }
+  const more = state.results.length < state.total;
+  box.replaceChildren(
+    el("div", { class: "count", text: `${state.total.toLocaleString()} papers match. Showing ${state.results.length}.` }),
+    ...state.results.map(paperRow),
+    more ? el("div", { class: "more" }, el("button", { class: "btn", type: "button", text: "Show more papers", onclick: () => runSearch(true) })) : null,
+  );
+}
+
+function paperRow(p) {
+  const on = state.selected.has(p.arxiv_id);
+  const row = el("article", { class: "row" + (on ? " on" : "") });
+  const box = el("input", { type: "checkbox", class: "tick", id: "pick-" + p.arxiv_id, "aria-label": "Select " + p.title });
+  box.checked = on;
+  box.addEventListener("change", () => {
+    if (box.checked) state.selected.set(p.arxiv_id, { arxiv_id: p.arxiv_id, title: p.title });
+    else state.selected.delete(p.arxiv_id);
+    row.classList.toggle("on", box.checked);
+    renderTray();
+  });
+  row.addEventListener("click", (e) => { if (!e.target.closest("a, button, input, label")) box.click(); });
+
+  const authors = p.authors.length > 3 ? p.authors.slice(0, 3).join(", ") + " and others" : p.authors.join(", ");
+  const abs = el("p", { class: "abstract clamp", text: p.abstract });
+  const toggle = el("button", { type: "button", text: "Read abstract", onclick: () => {
+    const open = abs.classList.toggle("clamp");
+    toggle.textContent = open ? "Read abstract" : "Collapse";
+  } });
+  row.append(
+    box,
+    el("div", {},
+      el("h3", { class: "paper-title" }, el("label", { for: "pick-" + p.arxiv_id, text: p.title })),
+      el("div", { class: "byline" },
+        el("span", { text: authors }), el("span", { text: p.published }), el("span", { text: p.categories.slice(0, 3).join(", ") }),
+        p.in_library ? el("span", { class: "badge ok", text: "In your library" }) : null),
+      abs,
+      el("div", { class: "row-actions" }, toggle,
+        el("a", { href: "https://arxiv.org/abs/" + p.arxiv_id, target: "_blank", rel: "noopener", text: "Open on arXiv" }),
+        el("a", { href: p.pdf_url, target: "_blank", rel: "noopener", text: "PDF" }))),
+  );
+  return row;
+}
+
+function renderTray() {
+  const tray = $("#tray");
+  const n = state.selected.size;
+  tray.hidden = !(state.view === "search" && n > 0);
+  if (tray.hidden) return;
+  const titles = [...state.selected.values()].map((p) => p.title);
+  tray.replaceChildren(
+    el("div", { class: "picked" },
+      el("b", { text: n === 1 ? "1 paper selected" : `${n} papers selected` }),
+      el("span", { class: "titles", text: titles.slice(0, 3).join("; ") + (n > 3 ? `; and ${n - 3} more` : "") })),
+    el("button", { class: "btn", type: "button", text: "Clear selection", onclick: () => { state.selected.clear(); renderResults(); renderTray(); } }),
+    el("button", { class: "btn primary", type: "button", text: "Start work", onclick: startWork }),
+  );
+}
+
+/* ------------------------------------------------------------ start / progress */
+function resetOutputs() { for (const p of Object.values(panels)) p.out.replaceChildren(); }
+
+async function startWork() {
+  const picks = [...state.selected.values()];
+  if (!picks.length) return;
+  try {
+    const { job_id } = await api("/papers/ingest", { method: "POST", body: { arxiv_ids: picks.map((p) => p.arxiv_id) } });
+    clearTimeout(state.poll);
+    state.jobId = job_id;
+    state.workspace = picks.map((p) => ({ arxiv_id: p.arxiv_id, title: p.title, status: "queued", message: "" }));
+    state.selected.clear();
+    renderResults();
+    resetOutputs();
+    renderWorkspace();
+    setView("work");
+    pollJob();
+  } catch (e) { toast(e.message, "bad"); }
+}
+
+async function pollJob() {
+  clearTimeout(state.poll);
+  if (!state.jobId) return;
+  try {
+    const job = await api("/papers/jobs/" + state.jobId);
+    for (const w of state.workspace) {
+      const p = job.papers[w.arxiv_id];
+      if (!p) continue;
+      w.status = p.status; w.message = p.message || "";
+      if (p.title) w.title = p.title;
+    }
+    renderWorkspace();
+    if (job.status !== "done") state.poll = setTimeout(pollJob, 1500);
+    else {
+      const ready = state.workspace.filter((w) => w.status === "ready").length;
+      const failed = state.workspace.filter((w) => w.status === "failed").length;
+      toast(failed ? `${ready} ready, ${failed} failed. See the reading list.` : `All ${ready} papers are ready.`, failed ? "bad" : "");
+    }
+  } catch (e) {
+    if (e.status === 404) {
+      for (const w of state.workspace) if (w.status !== "ready") { w.status = "failed"; w.message = "interrupted by a server restart"; }
+      renderWorkspace();
+      toast(e.message, "bad");
+    } else state.poll = setTimeout(pollJob, 4000);
+  }
+}
+
+/* ---------------------------------------------------------------- workspace */
+const STATUS = { queued: "Waiting", downloading: "Downloading PDF", processing: "Reading and indexing", ready: "Ready", failed: "Failed" };
+const readyIds = () => state.workspace.filter((w) => w.status === "ready").map((w) => w.arxiv_id);
+
+function renderWorkspace() {
+  updateNav();
+  const has = state.workspace.length > 0;
+  $("#work-empty").hidden = has;
+  $("#work-body").hidden = !has;
+  if (!has) return;
+  const ready = readyIds().length;
+  $("#list-summary").textContent = `${ready} of ${state.workspace.length} ready`;
+  $("#list").replaceChildren(...state.workspace.map((w) => {
+    const busy = w.status === "downloading" || w.status === "processing";
+    return el("li", {},
+      busy ? el("span", { class: "spinner", style: "margin-top:3px" }) : el("span", { class: "dot " + w.status }),
+      el("div", {},
+        el("div", { class: "t", text: w.title || "arXiv:" + w.arxiv_id }),
+        el("div", { class: "s " + w.status, text: STATUS[w.status] + (w.message ? ": " + w.message : "") })),
+      el("button", { class: "x", type: "button", title: "Remove from workspace", "aria-label": "Remove " + (w.title || w.arxiv_id), text: "×", onclick: () => {
+        state.workspace = state.workspace.filter((x) => x !== w);
+        renderWorkspace();
+      } }));
+  }));
+  if (verifySelect) {
+    const keep = verifySelect.value;
+    verifySelect.replaceChildren(...state.workspace.filter((w) => w.status === "ready").map((w) =>
+      el("option", { value: w.arxiv_id, text: (w.title || w.arxiv_id).slice(0, 110) })));
+    if (keep) verifySelect.value = keep;
+  }
+}
+
+const TABS = [
+  { id: "review", label: "Literature review" },
+  { id: "compare", label: "Compare methods" },
+  { id: "conflicts", label: "Conflicts" },
+  { id: "verify", label: "Check a claim" },
+  { id: "search", label: "Search passages" },
+];
+
+function selectTab(id) {
+  state.tab = id;
+  document.querySelectorAll("#tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
+  for (const [pid, p] of Object.entries(panels)) p.node.hidden = pid !== id;
+}
+
+function makePanel(cfg) {
+  const field = cfg.single
+    ? el("input", { type: "text", placeholder: cfg.placeholder, "aria-label": cfg.hint })
+    : el("textarea", { rows: 3, placeholder: cfg.placeholder, "aria-label": cfg.hint });
+  const extra = cfg.extra ? cfg.extra() : null;
+  const out = el("div", { class: "out", "aria-live": "polite" });
+  const btn = el("button", { class: "btn primary", type: "button", text: cfg.button });
+
+  async function go() {
+    const ids = readyIds();
+    if (!ids.length) return toast("No paper is ready yet. Wait for the reading list to finish.");
+    if (cfg.minPapers && ids.length < cfg.minPapers) return toast(`This needs at least ${cfg.minPapers} ready papers.`);
+    const text = field.value.trim();
+    if (text.length < 5) return toast(cfg.empty);
+    btn.disabled = true;
+    out.replaceChildren(loading(cfg.working));
+    try { out.replaceChildren(cfg.render(await cfg.run(text, ids, extra && extra.value()))); }
+    catch (e) { out.replaceChildren(errorBox(e.message)); }
+    finally { btn.disabled = false; }
+  }
+  btn.addEventListener("click", go);
+  field.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey || cfg.single)) { e.preventDefault(); go(); } });
+
+  const node = el("section", { class: "panel", id: "panel-" + cfg.id, role: "tabpanel", hidden: true },
+    el("p", { class: "hint", text: cfg.hint }), field, extra && extra.node,
+    el("div", { class: "actions" }, btn, cfg.single ? null : el("span", { class: "note", text: "Ctrl+Enter also runs it" })), out);
+  panels[cfg.id] = { node, out };
+  return node;
+}
+
+/* ------------------------------------------------------------ result renderers */
+const VERDICT = {
+  supported: { label: "Supported", cls: "ok" },
+  partially_supported: { label: "Partly supported", cls: "warn" },
+  unsupported: { label: "Not supported", cls: "bad" },
+  contradicted: { label: "Contradicted", cls: "bad" },
+  uncited: { label: "No citation", cls: "" },
+};
+
+function renderReview(d) {
+  const stats = d.stats || {};
+  const v = stats.verdicts || {};
+  const wrap = el("div", {});
+  wrap.append(el("div", { class: "summary" },
+    el("span", { class: "muted", text: `${stats.claims || 0} claims checked against their cited papers:` }),
+    ...Object.entries(v).map(([k, n]) => el("span", { class: "badge " + (VERDICT[k] || {}).cls, text: `${n} ${(VERDICT[k] || { label: k }).label.toLowerCase()}` }))));
+  if (!d.sections.length) wrap.append(el("p", { class: "muted", text: d.markdown }));
+  for (const s of d.sections) {
+    wrap.append(el("h3", { text: s.heading }));
+    for (const c of s.claims) wrap.append(claimRow(c));
+  }
+  if (d.citations.length) {
+    wrap.append(el("div", { class: "refs" }, el("h3", { text: "References" }),
+      el("ol", {}, d.citations.map((c) => el("li", { id: "ref-" + c.tag },
+        el("b", { text: c.tag }),
+        el("span", {}, c.title + " ", pageRef(c.arxiv_id, c.page_start, c.page_end), c.section ? ` (${c.section})` : ""))))));
+  }
+  return wrap;
+}
+
+function claimRow(c) {
+  const v = VERDICT[c.verdict] || VERDICT.unsupported;
+  const hasPassage = !!c.evidence && c.verdict !== "uncited";
+  return el("article", { class: "claim " + v.cls },
+    el("p", { class: "claim-text", text: c.text }),
+    el("div", { class: "margin" },
+      el("span", { class: "badge " + v.cls, text: v.label }),
+      c.cite.length ? el("div", { class: "chips" }, c.cite.map((t) => el("button", { class: "chip", type: "button", text: t, title: "Jump to reference", onclick: () => {
+        const r = document.getElementById("ref-" + t);
+        if (r) { r.scrollIntoView({ behavior: "smooth", block: "center" }); r.classList.add("flash"); setTimeout(() => r.classList.remove("flash"), 1600); }
+      } }))) : null,
+      hasPassage ? pageRef(c.arxiv_id, c.page_start, c.page_end) : null,
+      c.note ? el("p", { class: "note", text: c.note }) : null),
+    hasPassage ? el("details", { class: "evidence" },
+      el("summary", { text: c.verdict === "supported" || c.verdict === "partially_supported" ? "Passage that supports it" : "Closest passage in the cited paper" }),
+      el("blockquote", { text: c.evidence })) : null);
+}
+
+function renderCompare(d) {
+  if (!d.rows.length) return el("p", { class: "muted", text: "The retrieved passages did not describe methods clearly enough to compare. Try a more specific question." });
+  const cols = [["paper", "Paper"], ["task", "Task"], ["method", "Method"], ["data", "Data"], ["metrics", "Metrics"], ["results", "Results"], ["limitations", "Limitations"]];
+  return el("div", { class: "tablewrap" }, el("table", {},
+    el("thead", {}, el("tr", {}, cols.map(([, h]) => el("th", { text: h })))),
+    el("tbody", {}, d.rows.map((r) => el("tr", {}, cols.map(([k]) => el("td", {},
+      k === "paper"
+        ? [r.paper, r.citations[0] ? el("div", { class: "src" }, pageRef(r.arxiv_id, r.citations[0].page_start, r.citations[0].page_end)) : null]
+        : (r[k] || "–"))))))));
+}
+
+function renderConflicts(d) {
+  const wrap = el("div", {}, el("p", { class: "muted", text: `Compared ${d.findings_checked} findings across papers (${d.pairs_checked} related pairs).` }));
+  if (!d.conflicts.length) wrap.append(el("p", { text: "No contradictions found among the retrieved findings." }));
+  for (const c of d.conflicts) {
+    const side = (f) => el("div", {}, el("p", { text: f.text }), el("div", { class: "src" }, f.title, " ", pageRef(f.arxiv_id, f.page_start, f.page_end)));
+    wrap.append(el("div", { class: "pair" },
+      el("div", { class: "head" }, el("span", { class: "badge bad", text: `${pct(c.contradiction)} likely to conflict` })),
+      side(c.a), side(c.b)));
+  }
+  wrap.append(el("p", { class: "muted", style: "margin-top:20px;font-size:14px", text: d.caveat }));
+  return wrap;
+}
+
+function renderVerify(d) {
+  const r = d.result, v = VERDICT[r.verdict] || VERDICT.unsupported;
+  const meter = (label, x) => el("span", { class: "meter" }, label, el("i", {}, el("b", { style: `width:${pct(x)}` })), pct(x));
+  return el("div", {},
+    el("div", { class: "verdict" }, el("span", { class: "badge " + v.cls, text: v.label }),
+      meter("Entailment", r.entailment), meter("Contradiction", r.contradiction)),
+    r.note ? el("p", { class: "muted", text: r.note }) : null,
+    r.evidence ? el("div", {},
+      el("p", { class: "muted", style: "margin:12px 0 0", text: r.verdict === "supported" || r.verdict === "partially_supported" ? "Passage that supports the claim" : "Closest passage in the paper" }),
+      el("blockquote", { text: r.evidence }), el("div", {}, pageRef(r.arxiv_id, r.page_start, r.page_end))) : null);
+}
+
+function renderHits(d) {
+  if (!d.hits.length) return el("p", { class: "muted", text: "No passages matched." });
+  return el("div", {}, d.hits.map((h) => el("article", { class: "hit" },
+    el("h3", { text: h.title }),
+    el("div", { class: "src" }, h.section ? el("span", { text: h.section }) : null, pageRef(h.arxiv_id, h.page_start, h.page_end)),
+    el("p", { text: h.content }))));
+}
+
+/* ------------------------------------------------------------------- panels */
+function buildWorkspaceUI() {
+  const tabs = $("#tabs");
+  tabs.replaceChildren(...TABS.map((t) => el("button", { type: "button", role: "tab", "data-tab": t.id, text: t.label, onclick: () => selectTab(t.id) })));
+  const top = (ids, lo, hi, per) => clamp(ids.length * per, lo, hi);
+  $("#panels").replaceChildren(
+    makePanel({ id: "review", hint: "Ask a question. The review is written only from the selected papers, and every claim is checked against the passages it cites.",
+      placeholder: "How do recent papers reduce hallucination?", button: "Write review", empty: "Write the question the review should answer.",
+      working: "Reading the passages, writing, then checking each claim against its cited paper. This can take a minute.",
+      run: (q, ids) => api("/synthesize/review", { method: "POST", body: { question: q, top_k: top(ids, 6, 30, 4), verify: true, arxiv_ids: ids } }), render: renderReview }),
+    makePanel({ id: "compare", hint: "Describe what to compare. You get a table of task, method, data, metrics, results and limitations, one row per paper.",
+      placeholder: "Training data and evaluation metrics", button: "Compare methods", empty: "Say what the comparison should focus on.",
+      working: "Reading the passages and building the table.",
+      run: (q, ids) => api("/synthesize/compare", { method: "POST", body: { question: q, top_k: top(ids, 6, 30, 4), arxiv_ids: ids } }), render: renderCompare }),
+    makePanel({ id: "conflicts", minPapers: 2, hint: "Name a topic. The papers are searched for findings that contradict each other. It needs at least two ready papers.",
+      placeholder: "Effect of model size on accuracy", button: "Find conflicts", empty: "Name the topic to check for disagreements.",
+      working: "Extracting findings and comparing them across papers.",
+      run: (q, ids) => api("/synthesize/conflicts", { method: "POST", body: { question: q, top_k: top(ids, 8, 40, 5), arxiv_ids: ids } }), render: renderConflicts }),
+    makePanel({ id: "verify", hint: "Paste a sentence and pick the paper it is attributed to. You see whether that paper really says it.",
+      placeholder: "Method X improves F1 by 12.5% over the baseline.", button: "Check claim", empty: "Paste the sentence you want to check.",
+      working: "Looking for the claim in the paper.",
+      extra: () => { verifySelect = el("select", { "aria-label": "Paper to check against" }); return { node: verifySelect, value: () => verifySelect.value }; },
+      run: (q, ids, paper) => api("/synthesize/verify", { method: "POST", body: { claim: q, arxiv_id: paper || ids[0], top_k: 6 } }), render: renderVerify }),
+    makePanel({ id: "search", single: true, hint: "Search inside the selected papers. Results show the section and the page.",
+      placeholder: "how is faithfulness measured?", button: "Search", empty: "Type what to look for.",
+      working: "Searching the papers.",
+      run: (q, ids) => api("/search", { method: "POST", body: { query: q, top_k: 8, mode: "hybrid", rerank: true, arxiv_ids: ids } }), render: renderHits }),
+  );
+  selectTab(state.tab);
+}
+
+/* ------------------------------------------------------------------ library */
+async function loadLibrary() {
+  const box = $("#lib-list");
+  box.replaceChildren(loading("Loading your library."));
+  try {
+    const data = await api("/papers");
+    state.library = data.papers;
+    renderLibrary();
+  } catch (e) { box.replaceChildren(errorBox(e.message)); }
+}
+
+function renderLibrary() {
+  const box = $("#lib-list");
+  if (!state.library.length) {
+    box.replaceChildren(el("div", { class: "empty" }, el("strong", { text: "Your library is empty" }),
+      "Papers appear here after you start work on a selection."));
+    return;
+  }
+  box.replaceChildren(...state.library.map((p) => {
+    const usable = !!p.arxiv_id;
+    const row = el("article", { class: "row" + (state.libSel.has(p.arxiv_id) ? " on" : "") });
+    const box2 = el("input", { type: "checkbox", class: "tick", id: "lib-" + p.id, "aria-label": "Select " + p.title, disabled: !usable });
+    box2.checked = usable && state.libSel.has(p.arxiv_id);
+    box2.addEventListener("change", () => {
+      if (box2.checked) state.libSel.add(p.arxiv_id); else state.libSel.delete(p.arxiv_id);
+      row.classList.toggle("on", box2.checked);
+    });
+    row.addEventListener("click", (e) => { if (usable && !e.target.closest("a, button, input, label")) box2.click(); });
+    row.append(box2, el("div", {},
+      el("h3", { class: "paper-title" }, el("label", { for: "lib-" + p.id, text: p.title })),
+      el("div", { class: "byline" },
+        el("span", { text: (p.authors || []).slice(0, 3).join(", ") || "Uploaded PDF" }),
+        p.published ? el("span", { text: p.published }) : null,
+        el("span", { text: `${p.chunks} passages` }),
+        p.num_pages ? el("span", { text: `${p.num_pages} pages` }) : null,
+        usable ? null : el("span", { class: "badge", text: "No arXiv id, cannot be selected" })),
+      el("div", { class: "row-end" },
+        el("button", { class: "btn quiet danger", type: "button", text: "Remove from library", onclick: async () => {
+          if (!confirm(`Remove "${p.title}" and its indexed passages?`)) return;
+          try {
+            await api("/papers/" + p.id, { method: "DELETE" });
+            state.libSel.delete(p.arxiv_id);
+            state.workspace = state.workspace.filter((w) => w.arxiv_id !== p.arxiv_id);
+            renderWorkspace();
+            loadLibrary();
+          } catch (e) { toast(e.message, "bad"); }
+        } }))));
+    return row;
+  }));
+}
+
+$("#lib-go").addEventListener("click", () => {
+  const picks = state.library.filter((p) => p.arxiv_id && state.libSel.has(p.arxiv_id));
+  if (!picks.length) return toast("Tick at least one paper first.");
+  clearTimeout(state.poll);
+  state.jobId = null;
+  state.workspace = picks.map((p) => ({ arxiv_id: p.arxiv_id, title: p.title, status: "ready", message: "" }));
+  resetOutputs();
+  renderWorkspace();
+  setView("work");
+});
+
+/* --------------------------------------------------------------------- boot */
+buildWorkspaceUI();
+renderWorkspace();
+setView("search");
+$("#q").focus();
+</script>
+</body>
+</html>

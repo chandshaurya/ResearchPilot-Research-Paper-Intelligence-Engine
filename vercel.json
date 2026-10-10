@@ -1,4 +1,8 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/app/main" }],
-  "vercel-python": { "version": "python3.10" }
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/app/main"
+    }
+  ]
 }

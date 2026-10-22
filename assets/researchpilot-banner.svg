@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="520" viewBox="0 0 1600 520" role="img" aria-labelledby="title desc">
+  <title id="title">ResearchPilot — Research Paper Intelligence Engine</title>
+  <desc id="desc">A research intelligence banner showing connected paper documents, evidence passages, search, and verified insights.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0B1024"/><stop offset="0.58" stop-color="#142B4B"/><stop offset="1" stop-color="#155E75"/></linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#67E8F9"/><stop offset="1" stop-color="#A5B4FC"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#020617" flood-opacity=".3"/></filter>
+  </defs>
+  <rect width="1600" height="520" rx="32" fill="url(#bg)"/>
+  <circle cx="1360" cy="70" r="240" fill="#38BDF8" opacity=".08"/><circle cx="1460" cy="430" r="210" fill="#A5B4FC" opacity=".08"/>
+  <g opacity=".18" stroke="#BAE6FD" stroke-width="1"><path d="M0 90H1600M0 170H1600M0 250H1600M0 330H1600M0 410H1600"/><path d="M160 0V520M240 0V520M320 0V520M400 0V520M480 0V520M560 0V520M640 0V520M720 0V520M800 0V520M880 0V520M960 0V520M1040 0V520M1120 0V520M1200 0V520M1280 0V520M1360 0V520M1440 0V520"/></g>
+  <g transform="translate(100 126)">
+    <rect x="12" y="16" width="126" height="164" rx="14" fill="#93C5FD" opacity=".25" transform="rotate(-8 75 98)"/>
+    <rect x="24" y="4" width="126" height="164" rx="14" fill="#E0F2FE" opacity=".95" filter="url(#shadow)"/>
+    <path d="M52 43h68M52 62h68M52 81h48M52 111h68M52 130h54" stroke="#64748B" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="117" cy="145" r="25" fill="#0F766E"/><path d="m105 145 8 8 16-18" fill="none" stroke="#ECFEFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g stroke="url(#accent)" stroke-width="4" fill="none" stroke-linecap="round" opacity=".9"><path d="M278 216 C330 216 330 170 380 170"/><path d="M278 216 C330 216 330 278 380 278"/><path d="M540 170 C590 170 590 216 640 216"/><path d="M540 278 C590 278 590 216 640 216"/><path d="M800 216 C850 216 850 216 900 216"/><path d="M1060 216 C1110 216 1110 216 1160 216"/></g>
+  <g filter="url(#shadow)">
+    <rect x="380" y="126" width="160" height="88" rx="18" fill="#F8FAFC"/><circle cx="414" cy="170" r="15" fill="#0EA5E9"/><path d="M407 170h14M414 163v14" stroke="white" stroke-width="3" stroke-linecap="round"/><text x="440" y="165" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#0F172A">Semantic</text><text x="440" y="188" font-family="Arial,sans-serif" font-size="17" fill="#475569">search</text>
+    <rect x="380" y="234" width="160" height="88" rx="18" fill="#F8FAFC"/><circle cx="414" cy="278" r="15" fill="#6366F1"/><path d="M407 273h14M407 279h14M407 285h9" stroke="white" stroke-width="2.5" stroke-linecap="round"/><text x="440" y="273" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#0F172A">Full-text</text><text x="440" y="296" font-family="Arial,sans-serif" font-size="17" fill="#475569">search</text>
+    <rect x="640" y="174" width="160" height="84" rx="18" fill="#E0F2FE"/><path d="M670 199h36M670 211h55M670 223h44" stroke="#0369A1" stroke-width="5" stroke-linecap="round"/><text x="670" y="245" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#0C4A6E">Rank + rerank</text>
+    <rect x="900" y="174" width="160" height="84" rx="18" fill="#F8FAFC"/><path d="M930 198h35M930 210h52M930 222h43" stroke="#64748B" stroke-width="4" stroke-linecap="round"/><text x="930" y="245" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#0F172A">Evidence</text>
+    <rect x="1160" y="152" width="310" height="128" rx="22" fill="#ECFEFF"/><circle cx="1205" cy="198" r="22" fill="#0F766E"/><path d="m1195 198 7 7 14-16" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><text x="1242" y="194" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#134E4A">Grounded insights</text><text x="1242" y="222" font-family="Arial,sans-serif" font-size="16" fill="#475569">Citations • verification</text><text x="1242" y="246" font-family="Arial,sans-serif" font-size="16" fill="#475569">Methods • comparisons</text>
+  </g>
+  <text x="100" y="370" font-family="Arial,sans-serif" font-size="48" font-weight="700" fill="#FFFFFF">ResearchPilot</text>
+  <text x="102" y="412" font-family="Arial,sans-serif" font-size="23" fill="#CFFAFE">Research Paper Intelligence Engine</text>
+  <text x="102" y="458" font-family="Arial,sans-serif" font-size="17" fill="#BAE6FD">Discover papers · Retrieve evidence · Synthesize responsibly</text>
+</svg>
